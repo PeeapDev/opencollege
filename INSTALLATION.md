@@ -247,3 +247,142 @@ on the target database.
 
 For bugs, open an issue at:
 https://github.com/PeeapDev/opencollege/issues
+
+
+---
+
+## Appendix A — Running locally with XAMPP, Laragon, or Herd
+
+If you don't want to manage PHP/MySQL by hand, use one of these bundled
+stacks. Pick the one that matches your OS.
+
+### Laragon (Windows — easiest)
+
+1. Download and install **Laragon Full** from https://laragon.org
+2. Start Laragon → Apache and MySQL should both show "Running"
+3. Clone OpenCollege into Laragon's `www` folder:
+   ```
+   cd C:\laragon\www
+   git clone https://github.com/PeeapDev/opencollege.git
+   ```
+4. In Laragon, right-click → Quick app → (or it auto-detects) — Laragon
+   will automatically create `http://opencollege.test` as a vhost.
+5. Open a Laragon terminal (right-click menu → Terminal) and run:
+   ```
+   cd opencollege
+   composer install
+   cp .env.example .env
+   php artisan key:generate
+   ```
+6. Create the database: Laragon menu → MySQL → HeidiSQL → right-click
+   → Create new → Database → name it `opencollege`
+7. Edit `.env`:
+   ```
+   DB_DATABASE=opencollege
+   DB_USERNAME=root
+   DB_PASSWORD=
+   APP_URL=http://opencollege.test
+   ```
+8. Run migrations:
+   ```
+   php artisan migrate --seed
+   ```
+9. Open http://opencollege.test in your browser — done.
+
+Laragon auto-creates `.test` domains and gives you Apache, MySQL, PHP,
+Node, Composer, Git, and phpMyAdmin/HeidiSQL in one click. It's the
+fastest path on Windows.
+
+### XAMPP (Windows / macOS / Linux)
+
+1. Download XAMPP from https://www.apachefriends.org
+2. Install and start Apache + MySQL from the XAMPP control panel
+3. Clone OpenCollege into `htdocs`:
+   ```
+   cd /path/to/xampp/htdocs
+   git clone https://github.com/PeeapDev/opencollege.git
+   ```
+4. Open a terminal and run:
+   ```
+   cd opencollege
+   composer install
+   cp .env.example .env
+   php artisan key:generate
+   ```
+5. Create the database via http://localhost/phpmyadmin → "New" → name it
+   `opencollege` → utf8mb4_unicode_ci
+6. Edit `.env`:
+   ```
+   DB_DATABASE=opencollege
+   DB_USERNAME=root
+   DB_PASSWORD=
+   APP_URL=http://localhost:8000
+   ```
+7. Run migrations and start the dev server:
+   ```
+   php artisan migrate --seed
+   php artisan serve
+   ```
+8. Open http://localhost:8000
+
+> **Note:** XAMPP ships PHP in `C:\xampp\php\` (Windows) or
+> `/opt/lampp/bin/` (Linux). Make sure that directory is on your PATH, or
+> call PHP with its full path.
+
+### Herd (macOS / Windows)
+
+Herd from https://herd.laravel.com ships a pre-tuned PHP + nginx + DBngin
+bundle designed for Laravel development. If you already use Herd:
+
+```
+cd ~/Herd
+git clone https://github.com/PeeapDev/opencollege.git
+cd opencollege
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+```
+
+Open `http://opencollege.test` — Herd auto-creates the vhost.
+
+### Docker Compose (any OS)
+
+If you prefer containers:
+
+```
+git clone https://github.com/PeeapDev/opencollege.git
+cd opencollege
+docker compose up -d
+```
+
+A `docker-compose.yml` ships in the repo root (coming in the next
+release). First run will build the image, start MySQL, and run
+migrations automatically.
+
+### Laravel Sail (Linux / WSL2)
+
+Sail is Docker Compose with Laravel's ergonomics:
+
+```
+git clone https://github.com/PeeapDev/opencollege.git
+cd opencollege
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan migrate --seed
+```
+
+---
+
+## Appendix B — Requirements check script
+
+Before you start, run:
+
+```bash
+php -v
+php -m | grep -Ei 'bcmath|ctype|curl|dom|gd|intl|mbstring|openssl|pdo_mysql|xml|zip'
+composer --version
+node --version
+mysql --version
+```
+
+If any of those return errors or missing extensions, see Section 1.

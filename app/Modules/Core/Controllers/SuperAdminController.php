@@ -9,6 +9,7 @@ use App\Modules\Staff\Models\Staff;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
 class SuperAdminController extends Controller
@@ -74,7 +75,8 @@ class SuperAdminController extends Controller
             'admin_email' => 'required|email|unique:users,email',
         ]);
 
-        DB::transaction(function () use ($request) {
+        $tempAdminPassword = \Illuminate\Support\Str::random(16);
+        DB::transaction(function () use ($request, $tempAdminPassword) {
             $institution = Institution::create([
                 'name' => $request->name,
                 'code' => $request->code,
@@ -95,7 +97,7 @@ class SuperAdminController extends Controller
             $admin = User::create([
                 'name' => $request->admin_name,
                 'email' => $request->admin_email,
-                'password' => Hash::make('college123'),
+                'password' => Hash::make($tempAdminPassword),
                 'current_institution_id' => $institution->id,
             ]);
 
@@ -129,7 +131,7 @@ class SuperAdminController extends Controller
             ]);
         });
 
-        return redirect()->route('superadmin.colleges')->with('success', "College '{$request->name}' registered. Admin password: college123");
+        return redirect()->route('superadmin.colleges')->with('success', "College \'{$request->name}\' registered. Temporary admin password (shown once): {$tempAdminPassword}");
     }
 
     public function toggleCollege(Institution $institution)
@@ -138,12 +140,22 @@ class SuperAdminController extends Controller
         return back()->with('success', $institution->name . ($institution->active ? ' activated.' : ' deactivated.'));
     }
 
-    public function destroyCollege(Institution $institution)
+    public function destroyCollege(Request $request, Institution $institution)
     {
         if ($institution->id <= 1) {
             return back()->with('error', 'Cannot delete the platform institution.');
         }
-        $institution->delete();
+        // Require the operator to type the college name exactly as a safety check.
+        if ($request->input('confirm_name') !== $institution->name) {
+            return back()->with('error', 'College name confirmation did not match. Deletion aborted.');
+        }
+        // Soft-delete if the model supports it; otherwise fall back to hard delete.
+        if (in_array('Illuminate\\Database\\Eloquent\\SoftDeletes', class_uses_recursive($institution))) {
+            $institution->delete();
+        } else {
+            \Illuminate\Support\Facades\Log::warning('Hard-deleting college', ['id' => $institution->id, 'name' => $institution->name, 'by' => auth()->id()]);
+            $institution->delete();
+        }
         return redirect()->route('superadmin.colleges')->with('success', 'College deleted.');
     }
 }

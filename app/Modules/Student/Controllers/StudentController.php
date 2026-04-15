@@ -8,6 +8,7 @@ use App\Modules\Academic\Models\Program;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
 class StudentController extends Controller
@@ -40,11 +41,12 @@ class StudentController extends Controller
             'address' => 'nullable|string',
         ]);
 
-        DB::transaction(function () use ($request) {
+        $tempPassword = Str::random(12);
+        DB::transaction(function () use ($request, $tempPassword) {
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => Hash::make('student123'),
+                'password' => Hash::make($tempPassword),
                 'current_institution_id' => auth()->user()->current_institution_id,
             ]);
 
@@ -62,7 +64,7 @@ class StudentController extends Controller
             ]);
         });
 
-        return redirect()->route('students.index')->with('success', 'Student admitted successfully. Default password: student123');
+        return redirect()->route('students.index')->with('success', 'Student admitted. Temporary password sent to student (shown once): '.$tempPassword);
     }
 
     public function show(Student $student)
@@ -92,12 +94,12 @@ class StudentController extends Controller
             $student->update($request->only('program_id', 'status', 'gender', 'date_of_birth', 'phone', 'address', 'current_year', 'current_semester'));
         });
 
-        return redirect()->route('students.index')->with('success', 'Student updated successfully.');
+        return redirect()->route('students.index')->with('success', 'Student admitted. Temporary password sent to student (shown once): '.$tempPassword);
     }
 
     public function destroy(Student $student)
     {
         $student->user->delete();
-        return redirect()->route('students.index')->with('success', 'Student removed.');
+        return redirect()->route('students.index')->with('success', 'Student admitted. Temporary password sent to student (shown once): '.$tempPassword);
     }
 }

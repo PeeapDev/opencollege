@@ -18,16 +18,16 @@ Route::get('/contact', [FrontendController::class, 'contact'])->name('frontend.c
 
 // Public online admission
 Route::get('/apply', [AdmissionController::class, 'publicForm'])->name('admission.apply');
-Route::post('/apply', [AdmissionController::class, 'publicSubmit'])->name('admission.submit');
+Route::post('/apply', [AdmissionController::class, 'publicSubmit'])->middleware('throttle:10,1')->name('admission.submit');
 
 // Auth
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Public college registration (platform level)
 Route::get('/register-college', [CollegeRegistrationController::class, 'showForm'])->name('college.register');
-Route::post('/register-college', [CollegeRegistrationController::class, 'register']);
+Route::post('/register-college', [CollegeRegistrationController::class, 'register'])->middleware('throttle:5,10');
 
 // Protected routes
 Route::middleware('auth')->group(function () {
