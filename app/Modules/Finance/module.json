@@ -1,0 +1,11 @@
+{
+    "name": "Finance",
+    "alias": "finance",
+    "description": "Financial management — invoices, payments, fee categories, fee structures, scholarships, and PeeapPay integration.",
+    "version": "1.0.0",
+    "priority": 3,
+    "providers": [],
+    "dependencies": ["Core", "Student"],
+    "keywords": ["invoice", "payment", "fee", "scholarship", "peeappay"],
+    "active": true
+}

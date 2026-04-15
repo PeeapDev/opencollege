@@ -1,0 +1,11 @@
+{
+    "name": "Academic",
+    "alias": "academic",
+    "description": "Academic structure management — faculties, departments, programs, courses, semesters, and academic years.",
+    "version": "1.0.0",
+    "priority": 1,
+    "providers": [],
+    "dependencies": ["Core"],
+    "keywords": ["faculty", "department", "program", "course", "semester"],
+    "active": true
+}

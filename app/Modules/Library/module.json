@@ -1,0 +1,11 @@
+{
+    "name": "Library",
+    "alias": "library",
+    "description": "Library management — book catalog, categories, issue/return tracking, and library reports.",
+    "version": "1.0.0",
+    "priority": 4,
+    "providers": [],
+    "dependencies": ["Core", "Student"],
+    "keywords": ["library", "book", "catalog", "issue", "return"],
+    "active": true
+}

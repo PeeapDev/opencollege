@@ -1,0 +1,11 @@
+{
+    "name": "Attendance",
+    "alias": "attendance",
+    "description": "Attendance tracking — student and staff attendance records, reports, and analytics.",
+    "version": "1.0.0",
+    "priority": 3,
+    "providers": [],
+    "dependencies": ["Core", "Student", "Staff"],
+    "keywords": ["attendance", "student-attendance", "staff-attendance"],
+    "active": true
+}

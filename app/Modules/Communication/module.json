@@ -1,0 +1,11 @@
+{
+    "name": "Communication",
+    "alias": "communication",
+    "description": "Communication module — notices, internal messaging, announcements, and notification management.",
+    "version": "1.0.0",
+    "priority": 4,
+    "providers": [],
+    "dependencies": ["Core"],
+    "keywords": ["notice", "message", "announcement", "notification"],
+    "active": true
+}

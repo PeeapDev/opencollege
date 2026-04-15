@@ -1,0 +1,11 @@
+{
+    "name": "Student",
+    "alias": "student",
+    "description": "Student management — enrollment, admissions, student portal, ID cards with QR codes, and student records.",
+    "version": "1.0.0",
+    "priority": 2,
+    "providers": [],
+    "dependencies": ["Core", "Academic"],
+    "keywords": ["student", "enrollment", "admission", "portal", "id-card", "qr"],
+    "active": true
+}

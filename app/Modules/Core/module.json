@@ -1,0 +1,11 @@
+{
+    "name": "Core",
+    "alias": "core",
+    "description": "Core module providing authentication, multi-tenancy, dashboard, NSI verification, super admin panel, frontend pages, and layout system.",
+    "version": "1.0.0",
+    "priority": 0,
+    "providers": ["App\\Modules\\Core\\Providers\\ModuleServiceProvider"],
+    "dependencies": [],
+    "keywords": ["auth", "tenancy", "dashboard", "nsi", "superadmin", "frontend"],
+    "active": true
+}

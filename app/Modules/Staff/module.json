@@ -1,0 +1,11 @@
+{
+    "name": "Staff",
+    "alias": "staff",
+    "description": "Staff management — academic and non-academic staff records, designations, teaching assignments.",
+    "version": "1.0.0",
+    "priority": 2,
+    "providers": [],
+    "dependencies": ["Core", "Academic"],
+    "keywords": ["staff", "teacher", "designation", "teaching-assignment"],
+    "active": true
+}

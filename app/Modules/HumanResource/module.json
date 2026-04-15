@@ -1,0 +1,11 @@
+{
+    "name": "HumanResource",
+    "alias": "hr",
+    "description": "Human Resource management — leave requests, payroll, departments, staff performance, recruitment, and HR reports.",
+    "version": "1.0.0",
+    "priority": 3,
+    "providers": [],
+    "dependencies": ["Core", "Staff", "Finance"],
+    "keywords": ["hr", "leave", "payroll", "recruitment", "performance"],
+    "active": true
+}

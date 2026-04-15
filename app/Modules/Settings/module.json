@@ -1,0 +1,11 @@
+{
+    "name": "Settings",
+    "alias": "settings",
+    "description": "System settings — institution configuration, roles, permissions, and general system preferences.",
+    "version": "1.0.0",
+    "priority": 0,
+    "providers": [],
+    "dependencies": ["Core"],
+    "keywords": ["settings", "institution", "role", "permission", "config"],
+    "active": true
+}

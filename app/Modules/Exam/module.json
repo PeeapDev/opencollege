@@ -1,0 +1,11 @@
+{
+    "name": "Exam",
+    "alias": "exam",
+    "description": "Examination management — exam schedules, grading, result stores, result publications, and exam board.",
+    "version": "1.0.0",
+    "priority": 3,
+    "providers": [],
+    "dependencies": ["Core", "Academic", "Student"],
+    "keywords": ["exam", "grading", "result", "schedule", "exam-board"],
+    "active": true
+}
