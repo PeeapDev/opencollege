@@ -10,6 +10,8 @@ use App\Modules\Student\Controllers\AdmissionController;
 use App\Modules\Student\Controllers\StudentPortalController;
 use Illuminate\Support\Facades\Route;
 
+require __DIR__.'/install.php';
+
 // Public frontend (college website)
 Route::get('/', [FrontendController::class, 'index'])->name('frontend.home');
 Route::get('/about', [FrontendController::class, 'about'])->name('frontend.about');
