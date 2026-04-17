@@ -20,19 +20,91 @@ Character set: **utf8mb4** with **utf8mb4_unicode_ci** collation. This
 matters for student names in non-Latin scripts, emoji-safe text, and
 proper case-insensitive matching.
 
-Create the database manually before running migrations:
+## Creating the database before `migrate`
 
-```sql
-CREATE DATABASE opencollege
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
+You need to create an empty database **before** running migrations.
+Laravel will create tables inside it, but it won't create the database
+itself.
 
-CREATE USER 'opencollege'@'localhost' IDENTIFIED BY 'change-me';
-GRANT ALL ON opencollege.* TO 'opencollege'@'localhost';
-FLUSH PRIVILEGES;
+> ⚠️ The SQL commands below are **NOT shell commands**. Do not paste
+> them into PowerShell, Git Bash, or a Mac/Linux terminal — they will
+> error. They run **inside a MySQL client**.
+
+Pick ONE of the following paths depending on your setup:
+
+### Path 1 — Laragon (Windows, recommended for beginners)
+
+Laragon bundles MySQL + a GUI database tool (HeidiSQL). You do not need
+to type any SQL.
+
+1. Open **Laragon**
+2. Click **Start All** (Apache + MySQL turn green)
+3. Right-click the Laragon window → **Database → HeidiSQL** → Open
+4. In HeidiSQL, right-click in the left panel (where servers are listed)
+   → **Create new → Database**
+5. Fill in:
+   - **Name:** `opencollege`
+   - **Collation:** `utf8mb4_unicode_ci`
+6. Click **OK** — done.
+
+Laragon's default MySQL user is `root` with **empty password**, so put
+this in your `.env`:
+
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=opencollege
+DB_USERNAME=root
+DB_PASSWORD=
 ```
 
-Then configure `.env`:
+### Path 2 — XAMPP / MAMP / WAMP (Windows / macOS)
+
+These bundle MySQL + phpMyAdmin (web GUI).
+
+1. Start MySQL from the control panel
+2. Open **http://localhost/phpmyadmin** in your browser
+3. Click **New** in the left sidebar
+4. Fill:
+   - **Database name:** `opencollege`
+   - **Collation:** `utf8mb4_unicode_ci`
+5. Click **Create**
+
+Default credentials in XAMPP: `root` / empty password. Put the same
+`.env` values shown in Path 1.
+
+### Path 3 — Standalone MySQL on Linux / macOS / Windows
+
+If you installed MySQL directly (not through a bundle), open a terminal
+and **start the MySQL client** first — the `mysql` program logs you
+into the server so you can run SQL.
+
+```bash
+# This single line prompts for your MySQL root password, then runs the SQL:
+mysql -u root -p -e "CREATE DATABASE opencollege CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+```
+
+That one-liner is all you need if you're happy using `root` from the
+app. For better isolation, create a dedicated app user:
+
+```bash
+# Log into the MySQL shell. You'll see a 'mysql>' prompt.
+mysql -u root -p
+```
+
+Once you see `mysql>`, paste the SQL (press Enter after each line — each
+statement ends with a semicolon):
+
+```sql
+CREATE DATABASE opencollege CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'opencollege'@'localhost' IDENTIFIED BY 'change-me-please';
+GRANT ALL ON opencollege.* TO 'opencollege'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+`EXIT;` returns you to the normal terminal prompt. Then in your `.env`:
 
 ```dotenv
 DB_CONNECTION=mysql
@@ -40,11 +112,50 @@ DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=opencollege
 DB_USERNAME=opencollege
-DB_PASSWORD=change-me
+DB_PASSWORD=change-me-please
 ```
 
-For PostgreSQL, set `DB_CONNECTION=pgsql` and `DB_PORT=5432`; the
-migrations are driver-agnostic.
+### Path 4 — PostgreSQL (instead of MySQL)
+
+```bash
+sudo -u postgres psql
+```
+
+In the `psql` shell:
+
+```sql
+CREATE DATABASE opencollege;
+CREATE USER opencollege WITH PASSWORD 'change-me-please';
+GRANT ALL PRIVILEGES ON DATABASE opencollege TO opencollege;
+\q
+```
+
+`.env`:
+
+```dotenv
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=opencollege
+DB_USERNAME=opencollege
+DB_PASSWORD=change-me-please
+```
+
+### Common mistakes
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `CREATE : The term 'CREATE' is not recognized` (PowerShell) | You pasted SQL into PowerShell instead of the MySQL client. | See Path 3 — run `mysql -u root -p` first to enter the SQL shell. |
+| `Access denied for user 'root'@'localhost'` | Wrong password, or MySQL not started. | Reset MySQL root password, or start Laragon/XAMPP first. |
+| `Unknown database 'opencollege'` when running migrations | You skipped this step entirely. | Go back and create the database. |
+| `SQLSTATE[HY000] [2002] No such file` | MySQL isn't running. | Start it (Laragon → Start All, XAMPP → Start, `sudo systemctl start mysql`). |
+| `Character set 'utf8mb4_unicode_ci' is not a compatible ... ` | Old MySQL version. | Upgrade to MySQL 8+ or MariaDB 10.6+. Older versions use different collation names. |
+
+Once the database exists and `.env` points to it, run migrations:
+
+```bash
+php artisan migrate --seed
+```
 
 ---
 

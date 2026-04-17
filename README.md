@@ -173,7 +173,8 @@ composer install
 cp .env.example .env
 php artisan key:generate
 
-# Configure your database in .env (see Configuration section)
+# Create an empty database first (see below), then configure
+# the credentials in .env
 
 # Run migrations and seed sample data
 php artisan migrate --seed
@@ -182,10 +183,18 @@ php artisan migrate --seed
 php artisan serve
 ```
 
-> **Database details** — see [`docs/database.md`](docs/database.md) for
-> the full schema, what `migrate --seed` creates (demo users,
-> institutions, programs, students), multi-tenancy scoping, backup
-> strategy, and troubleshooting.
+> **⚠️ Before `php artisan migrate`: create the database.**
+> Laravel will create the *tables*, but not the database itself. The
+> easiest path on Windows is Laragon → HeidiSQL → right-click → Create
+> new database → name it `opencollege` with collation `utf8mb4_unicode_ci`.
+> Full step-by-step for every OS (Laragon, XAMPP, standalone MySQL,
+> PostgreSQL) + troubleshooting is in
+> [`docs/database.md`](docs/database.md).
+>
+> **Common beginner mistake:** pasting SQL (`CREATE DATABASE …`) into
+> PowerShell. Those are SQL statements, not shell commands — they go
+> inside a MySQL client (HeidiSQL, phpMyAdmin, or the `mysql` CLI
+> after running `mysql -u root -p`).
 
 ### Using the Composer Script
 
