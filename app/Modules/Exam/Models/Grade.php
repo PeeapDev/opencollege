@@ -2,10 +2,13 @@
 
 namespace App\Modules\Exam\Models;
 
+use App\Traits\LogsAudit;
 use Illuminate\Database\Eloquent\Model;
 
 class Grade extends Model
 {
+    use LogsAudit;
+
     protected $guarded = ['id'];
 
     protected $casts = [

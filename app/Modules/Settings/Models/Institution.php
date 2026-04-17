@@ -2,10 +2,15 @@
 
 namespace App\Modules\Settings\Models;
 
+use App\Traits\LogsAudit;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Institution extends Model
 {
+    use SoftDeletes;
+    use LogsAudit;
+
     protected $guarded = ['id'];
 
     protected $casts = [

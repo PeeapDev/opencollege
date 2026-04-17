@@ -54,7 +54,21 @@ class AuthController extends Controller
             }
         }
 
+        // Account lockout check (DPG Criterion 9)
+        if ($user && $user->locked_until && now()->lt($user->locked_until)) {
+            $mins = now()->diffInMinutes($user->locked_until) + 1;
+            \Log::warning('Login blocked: account locked', ['user_id' => $user->id, 'ip' => $request->ip()]);
+            return back()->withErrors(['identifier' => "Account is temporarily locked. Try again in {$mins} minute(s)."])->onlyInput('identifier');
+        }
+
         if ($user && Hash::check($request->password, $user->password)) {
+            // Successful login — reset counters, record metadata
+            $user->failed_login_attempts = 0;
+            $user->locked_until = null;
+            $user->last_login_at = now();
+            $user->last_login_ip = $request->ip();
+            $user->saveQuietly();
+
             Auth::login($user, $remember);
             $request->session()->regenerate();
 
@@ -63,6 +77,16 @@ class AuthController extends Controller
                 return redirect()->intended(route('student.portal'));
             }
             return redirect()->intended(route('dashboard'));
+        }
+
+        // Failed login — track attempts on the user record
+        if ($user) {
+            $user->failed_login_attempts = (int) $user->failed_login_attempts + 1;
+            if ($user->failed_login_attempts >= 10) {
+                $user->locked_until = now()->addMinutes(15);
+                \Log::warning('Account locked after failed attempts', ['user_id' => $user->id, 'ip' => $request->ip()]);
+            }
+            $user->saveQuietly();
         }
 
         return back()->withErrors(['identifier' => 'Invalid credentials. Check your email, phone, NSI, or matric number and password.'])->onlyInput('identifier');

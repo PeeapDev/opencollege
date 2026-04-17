@@ -6,6 +6,7 @@ use App\Modules\Core\Controllers\SuperAdminController;
 use App\Modules\Core\Controllers\NsiVerificationController;
 use App\Modules\Core\Controllers\CollegeRegistrationController;
 use App\Modules\Core\Controllers\FrontendController;
+use App\Modules\Core\Controllers\ForcePasswordController;
 use App\Modules\Student\Controllers\AdmissionController;
 use App\Modules\Student\Controllers\StudentPortalController;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,12 @@ Route::post('/apply', [AdmissionController::class, 'publicSubmit'])->middleware(
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Force password change (first login / after admin reset)
+Route::middleware('auth')->group(function () {
+    Route::get('/password/force-change', [ForcePasswordController::class, 'show'])->name('password.force.show');
+    Route::post('/password/force-update', [ForcePasswordController::class, 'update'])->middleware('throttle:5,1')->name('password.force.update');
+});
 
 // Public college registration (platform level)
 Route::get('/register-college', [CollegeRegistrationController::class, 'showForm'])->name('college.register');

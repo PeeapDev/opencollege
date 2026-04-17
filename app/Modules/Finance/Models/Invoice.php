@@ -4,10 +4,12 @@ namespace App\Modules\Finance\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Modules\Core\Traits\BelongsToInstitution;
+use App\Traits\LogsAudit;
 
 class Invoice extends Model
 {
     use BelongsToInstitution;
+    use LogsAudit;
 
     protected $guarded = ['id'];
 

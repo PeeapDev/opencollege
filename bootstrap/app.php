@@ -16,9 +16,14 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\CheckInstallation::class,
             \App\Http\Middleware\TenantMiddleware::class,
         ]);
+        $middleware->web(append: [
+            \App\Http\Middleware\SecurityHeaders::class,
+            \App\Http\Middleware\ForcePasswordChange::class,
+        ]);
         $middleware->alias([
             'tenant' => \App\Http\Middleware\TenantMiddleware::class,
             'super_admin' => \App\Http\Middleware\SuperAdminMiddleware::class,
+            'force_password_change' => \App\Http\Middleware\ForcePasswordChange::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
