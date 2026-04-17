@@ -1,7 +1,7 @@
 @extends('hemis::layout')
 @section('title', 'Dashboard')
 @section('page_title', 'National Tertiary Education Dashboard')
-@section('subtitle', 'Aggregate view across all registered higher-education institutions in Sierra Leone')
+@section('subtitle', 'Aggregate view across all registered higher-education institutions')
 
 @section('content')
 

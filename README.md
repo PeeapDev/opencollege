@@ -161,66 +161,84 @@ No manual registration required -- the service provider discovers and loads acti
 
 ### Quick Start
 
+OpenCollege uses a **CodeCanyon-style browser setup wizard**. All
+credentials — database, admin account, site URL, mail settings — are
+entered through the wizard, not in `.env`.
+
+**Step 1 — Get the code & dependencies:**
+
 ```bash
-# Clone the repository
 git clone https://github.com/PeeapDev/opencollege.git
 cd opencollege
-
-# Install PHP dependencies
 composer install
+```
 
-# Copy environment file and generate app key
-cp .env.example .env
-php artisan key:generate
+**Step 2 — Create an empty database** (the wizard will fill it):
 
-# Create an empty database first (see below), then configure
-# the credentials in .env
+- **Windows + Laragon (recommended):** right-click Laragon → Database →
+  HeidiSQL → right-click → Create new → Database → name `opencollege`,
+  collation `utf8mb4_unicode_ci`
+- **XAMPP / MAMP:** open `http://localhost/phpmyadmin` → **New** →
+  name `opencollege`, collation `utf8mb4_unicode_ci`
+- **Linux / macOS:**
+  ```bash
+  mysql -u root -p -e "CREATE DATABASE opencollege CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+  ```
 
-# Run migrations and seed sample data
-php artisan migrate --seed
+**Step 3 — Start the server and open the wizard:**
 
-# Start the development server
+```bash
 php artisan serve
 ```
 
-> **⚠️ Before `php artisan migrate`: create the database.**
-> Laravel will create the *tables*, but not the database itself.
+Open **http://localhost:8000/install** (or your Laragon vhost, e.g.
+`http://opencollege.test/install`). The wizard redirects you
+automatically on the first visit — you do not need to edit `.env`.
+
+**The 6-step wizard:**
+
+| Step | What happens |
+|------|--------------|
+| 1. Welcome | Intro screen |
+| 2. Requirements | Live check of PHP version, extensions, writable folders |
+| 3. Database | Host / port / name / user / password → **tests the connection live** |
+| 4. Site | App name, URL, timezone, mail-from address |
+| 5. Admin | Create super-admin account (name, email, password) + optional seed demo data |
+| 6. Finalize | One click → writes `.env`, generates `APP_KEY`, runs migrations, seeds, creates admin, writes lock file |
+
+When finished, a lock file is written to `storage/installed` and the
+wizard blocks further access. You're redirected to `/login`.
+
+> **Do not edit `.env` by hand.** The shipped `.env.example` contains
+> framework defaults only — no DB credentials, no admin account. The
+> wizard is the single source of truth for all credentials and will
+> overwrite whatever is there.
 >
-> **New to this?** Follow the step-by-step walkthrough:
-> - **Windows + Laragon (recommended):**
->   [`docs/install-laragon.md`](docs/install-laragon.md) — 15 numbered
->   steps, ~20 minutes, no prior PHP knowledge needed
-> - **Any OS / any stack:** [`docs/database.md`](docs/database.md)
->   covers Laragon, XAMPP, standalone MySQL, PostgreSQL + troubleshooting
+> **Beginner walkthroughs:**
+> - **Windows + Laragon:** [`docs/install-laragon.md`](docs/install-laragon.md)
+> - **Database troubleshooting:** [`docs/database.md`](docs/database.md)
 >
-> **Common beginner mistake:** pasting SQL (`CREATE DATABASE …`) into
+> **Common mistake:** pasting SQL (`CREATE DATABASE …`) into
 > PowerShell. Those are SQL statements, not shell commands — they go
-> inside a MySQL client (HeidiSQL, phpMyAdmin, or the `mysql` CLI
-> after running `mysql -u root -p`).
+> inside a MySQL client (HeidiSQL, phpMyAdmin, or `mysql -u root -p`).
 
-### Using the Composer Script
+### After installation
 
-```bash
-git clone https://github.com/PeeapDev/opencollege.git
-cd opencollege
-composer setup
-```
+Log in with the super-admin credentials you entered in **Step 5 of the
+wizard**. There are no default passwords — the wizard requires you to
+set your own.
 
-This runs `composer install`, copies `.env.example`, generates the app key, runs migrations, installs npm packages, and builds frontend assets.
+If you opted in to the "seed demo data" checkbox in Step 5, the
+installer also creates one demo college called **"College of Sierra
+Leone"** with sample faculties, programs, and students attached. You
+can explore it at `http://csl.opencollege.test` (after adding the
+subdomain to your hosts file, or enabling Acrylic DNS wildcard in
+Laragon — see [`docs/install-laragon.md`](docs/install-laragon.md)
+Step 14).
 
-### Default Login Credentials
-
-After seeding, the following accounts are available:
-
-| Role | Email | Password | Domain |
-|------|-------|----------|--------|
-| Super Admin | admin@college.edu.sl | admin123 | Main domain |
-| College Admin (CSL) | admin@csl.college.edu.sl | college123 | csl.college.edu.sl |
-| College Admin (Njala) | admin@njala.college.edu.sl | college123 | njala.college.edu.sl |
-| Sample Student | alhaji.turay@student.college.edu.sl | student123 | Student portal |
-| Sample Staff | mkamara@college.edu.sl | staff123 | Staff dashboard |
-
-> **Important:** Change these default passwords immediately in production environments.
+To register additional colleges, log in as the platform admin and use
+**Platform → Manage Colleges → Register new college** from the HEMIS
+sidebar.
 
 ---
 
@@ -405,10 +423,14 @@ For detailed API documentation, see [docs/modules.md](docs/modules.md).
 
 1. Upload all files to your hosting account
 2. Point the document root to the `public/` directory
-3. Create a MySQL database via cPanel
-4. Configure `.env` with production credentials
-5. Run migrations: `php artisan migrate --seed`
-6. Set up wildcard subdomain in cPanel for multi-tenancy
+3. Create a MySQL database via cPanel (collation `utf8mb4_unicode_ci`)
+4. Set up wildcard subdomain in cPanel for multi-tenancy (see
+   [`INSTALLATION.md`](INSTALLATION.md) Appendix C)
+5. Visit `https://yourdomain.com/install` — the web wizard handles
+   `.env`, `APP_KEY`, migrations, admin account, and lock file
+
+Don't run `php artisan migrate` manually unless you know what you're
+doing — the wizard does it for you and writes the lock file.
 
 ### VPS / Dedicated Server
 
@@ -418,22 +440,23 @@ git clone https://github.com/PeeapDev/opencollege.git /var/www/opencollege
 cd /var/www/opencollege
 composer install --no-dev --optimize-autoloader
 
-# Configure environment
-cp .env.example .env
-php artisan key:generate
-# Edit .env with production values
+# Set permissions (do this BEFORE visiting /install or migrations
+# will fail with 'Please provide a valid cache path')
+chown -R www-data:www-data storage bootstrap/cache
+chmod -R 775 storage bootstrap/cache
 
-# Run migrations
-php artisan migrate --seed
+# Create an empty MySQL database (see docs/database.md), then visit
+# https://your-domain.example/install — the wizard does the rest:
+#   - Creates .env + APP_KEY
+#   - Runs migrations
+#   - Seeds demo data (optional)
+#   - Creates super-admin from the form
+#   - Writes storage/installed lock file
 
-# Optimize for production
+# After the wizard finishes, optimise for production:
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-
-# Set permissions
-chown -R www-data:www-data storage bootstrap/cache
-chmod -R 775 storage bootstrap/cache
 ```
 
 ### Apache Virtual Host

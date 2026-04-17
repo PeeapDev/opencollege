@@ -1,7 +1,7 @@
 @extends('hemis::layout')
 @section('title', 'Students')
 @section('page_title', 'National Student Registry')
-@section('subtitle', 'Search students across every higher-education institution in Sierra Leone')
+@section('subtitle', 'Search students across every registered higher-education institution')
 
 @section('content')
 

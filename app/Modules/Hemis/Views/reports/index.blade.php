@@ -1,7 +1,7 @@
 @extends('hemis::layout')
 @section('title', 'National Reports')
 @section('page_title', 'National Reports')
-@section('subtitle', 'Aggregate statistics for tertiary education in Sierra Leone')
+@section('subtitle', 'Aggregate statistics for tertiary education')
 
 @section('content')
 

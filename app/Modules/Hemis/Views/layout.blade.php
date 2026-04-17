@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'HEMIS') — Sierra Leone Higher Education MIS</title>
+    <title>@yield('title', 'HEMIS') — {{ config('opencollege.country', 'National') }} Higher Education MIS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -23,7 +23,7 @@
                 </div>
                 <div>
                     <div class="text-sm font-bold text-white">HEMIS</div>
-                    <div class="text-xs text-slate-400">Sierra Leone</div>
+                    <div class="text-xs text-slate-400">{{ config('opencollege.country', 'National') }}</div>
                 </div>
             </div>
         </div>
@@ -59,7 +59,7 @@
 
         <div class="p-4 border-t border-slate-800 text-xs text-slate-400">
             <div>HEMIS v0.1</div>
-            <div class="mt-1">Ministry of Technical &amp; Higher Education</div>
+            <div class="mt-1">{{ config('opencollege.ministry', 'Ministry of Higher Education') }}</div>
         </div>
     </aside>
 

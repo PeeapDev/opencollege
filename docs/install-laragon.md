@@ -1,77 +1,59 @@
 # Installing OpenCollege on Windows with Laragon
 
-A complete, step-by-step walkthrough. No prior PHP/Laravel knowledge
-assumed. If you can follow 15 numbered steps, you'll have OpenCollege
-running on your laptop at http://opencollege.test.
+A complete, step-by-step walkthrough using the **web setup wizard**.
+No `.env` editing, no CLI migration. If you can follow 11 numbered
+steps, you'll have OpenCollege running in ~15 minutes.
 
 **What you'll end up with:**
-- A working OpenCollege install at http://opencollege.test
-- Sample data: 1 demo college, ~20 students, faculties, programs
-- HEMIS government portal at the root URL (where you log in as platform
-  super-admin)
-- Ability to create real colleges as subdomains like
-  http://njala.opencollege.test
-
-**Estimated time:** 15–20 minutes.
+- A working OpenCollege install at `http://opencollege.test`
+- HEMIS government portal at the root URL
+- A super-admin account with credentials you chose yourself
+- (Optional) one demo college seeded with sample data
+- Ability to register real colleges via the platform admin UI
 
 ---
 
 ## Before you start
 
-Make sure you have:
-
 - [ ] **Windows 10 or 11**
-- [ ] **Laragon Full edition** installed from https://laragon.org
-  (download the big installer — the "Full" one, not "Lite"; it bundles
-  PHP, MySQL, Node, Composer, Git, HeidiSQL)
-- [ ] **At least 2 GB of free disk space**
-- [ ] **An internet connection** (composer will download ~200 MB of
-  PHP packages on first run)
+- [ ] **Laragon Full edition** from https://laragon.org (the Full
+  installer — bundles PHP, MySQL, Node, Composer, Git, HeidiSQL)
+- [ ] **~2 GB free disk space**
+- [ ] **Internet connection** for the first `composer install`
 
 ---
 
 ## Step 1 — Start Laragon
 
-1. Open Laragon (double-click the desktop icon, or find it in the Start menu)
-2. Click **Start All** (big button, bottom-right)
-3. Wait until the panel shows:
-   - ✅ Apache: Running on port 80
-   - ✅ MySQL: Running on port 3306
-4. If Apache shows a port-in-use error, another program is using port 80.
-   Stop it (usually IIS, Skype, or another local web server) and click
-   Start All again.
+1. Open Laragon
+2. Click **Start All** — wait for Apache and MySQL to turn green
+3. If port 80 is in use, stop the conflicting program (often IIS or
+   Skype) and click Start All again
 
 ---
 
-## Step 2 — Verify Laragon has what we need
+## Step 2 — Open Laragon's terminal
 
-Open a Laragon terminal — right-click anywhere inside the Laragon window
-→ **Terminal**. This opens a command prompt with PHP, MySQL, and
-Composer already on the PATH.
+Right-click anywhere inside the Laragon window → **Terminal**.
 
-In the terminal, verify each tool:
+This opens a shell with PHP, MySQL, Composer, and Git already on your
+PATH. Verify:
 
 ```
 php -v
 composer --version
-node -v
 mysql --version
 ```
 
-Each should print a version number. If any says "command not found",
-your Laragon install is incomplete — reinstall the Full edition.
+All three should print version numbers.
 
-Required minimum versions:
-- PHP **8.2+**
-- Composer **2.5+**
-- Node **18+**
-- MySQL **8.0+** (Laragon ships 8.x, you're fine)
+> **Note:** `mysql` only resolves inside the Laragon terminal. Plain
+> PowerShell won't find it unless you add
+> `C:\laragon\bin\mysql\mysql-*\bin` to your global PATH.
 
 ---
 
 ## Step 3 — Clone the repository
-
-Still in the Laragon terminal:
 
 ```
 cd C:/laragon/www
@@ -79,291 +61,211 @@ git clone https://github.com/PeeapDev/opencollege.git
 cd opencollege
 ```
 
-Laragon automatically creates a vhost for any folder in `C:/laragon/www`.
-The folder name becomes the hostname, so `opencollege` → `opencollege.test`.
+Laragon auto-creates a vhost for any folder in `C:/laragon/www` — the
+folder name becomes the hostname (`opencollege` → `opencollege.test`).
 
 ---
 
-## Step 4 — Install PHP dependencies
+## Step 4 — Install dependencies
 
 ```
 composer install
 ```
 
-Composer reads `composer.lock` and downloads ~111 packages. First run
-takes 2–5 minutes. You'll see lots of "Downloading ..." and
-"Installing ..." lines. Wait for it to print
-`Generating optimized autoload files` and return to the prompt.
+Takes 2–5 minutes on first run (downloads ~200 MB of packages). When
+it finishes, you'll see `Generating optimized autoload files`.
 
-If you see an error like `ext-intl is missing`: in Laragon → **PHP →
-Extensions** → tick `intl`, then restart Apache.
+If you hit `ext-intl is missing`: Laragon → **PHP → Extensions** →
+tick `intl`, restart Apache, re-run.
 
 ---
 
-## Step 5 — Create environment file
+## Step 5 — Create the empty database
 
-```
-copy .env.example .env
-php artisan key:generate
-```
+> These are **HeidiSQL clicks**, not terminal commands.
 
-The first command copies the template. The second fills in a random
-`APP_KEY` used to encrypt session cookies.
-
----
-
-## Step 6 — Create the database (this is the step most people miss)
-
-> **Important:** the next few lines are NOT terminal commands. They go
-> inside a MySQL tool called HeidiSQL. Do not paste them into
-> PowerShell — that's the #1 beginner mistake.
-
-1. Back on the Laragon main window, right-click → **Database → HeidiSQL**
-2. HeidiSQL opens. In the left panel you'll see **"localhost"** under
-   "Session manager" — double-click it to connect (no password needed).
-3. In the left panel (after connection), **right-click the localhost root**
-   → **Create new → Database**
-4. In the dialog:
-   - **Name:** `opencollege`
-   - **Collation:** choose `utf8mb4_unicode_ci`
+1. Laragon window → right-click → **Database → HeidiSQL**
+2. In HeidiSQL left panel, double-click **"localhost"** to connect
+   (no password by default)
+3. Right-click the localhost root → **Create new → Database**
+4. Name: **`opencollege`**, Collation: **`utf8mb4_unicode_ci`**
 5. Click **OK**
 
-You've just created an empty database. HeidiSQL now shows `opencollege`
-in the tree. Leave HeidiSQL open — we'll come back to it at the end to
-check the tables.
+You've created an empty DB. The wizard fills it with tables in Step 8.
 
 ---
 
-## Step 7 — Point `.env` at the database
+## Step 6 — Visit the setup wizard
 
-Open the `.env` file you created in Step 5. In the Laragon terminal:
-
-```
-notepad .env
-```
-
-(Or use VS Code / any editor.)
-
-Find and change these lines to match Laragon's defaults:
-
-```dotenv
-APP_URL=http://opencollege.test
-
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=opencollege
-DB_USERNAME=root
-DB_PASSWORD=
-```
-
-Save and close.
-
-Why `root` with empty password? That's what Laragon ships by default.
-In production you'd use a dedicated user, but for local development
-this is fine.
-
----
-
-## Step 8 — Run migrations + seed sample data
-
-Back in the Laragon terminal:
-
-```
-php artisan migrate --seed
-```
-
-You'll see ~40 migration lines scrolling past (creating tables like
-users, institutions, faculties, departments, programs, students…),
-then the seeder populates a demo college with sample data.
-
-Expected output ends with:
-```
-INFO  Database seeded successfully.
-```
-
-If it fails with "Base table or view not found" — you forgot Step 6.
-If it fails with "Access denied for user 'root'" — check your `.env`
-password in Step 7.
-
----
-
-## Step 9 — Generate the storage symlink
-
-```
-php artisan storage:link
-```
-
-This lets uploaded files (student photos, logos) be served by the web
-server.
-
----
-
-## Step 10 — Restart Laragon so it picks up the new vhost
-
-Click **Stop All** then **Start All** in Laragon. This isn't strictly
-needed (Laragon usually auto-detects new folders) but it guarantees
-`opencollege.test` resolves on the next step.
-
----
-
-## Step 11 — Visit the site
-
-Open your browser and go to:
+In your browser, go to:
 
 ```
 http://opencollege.test
 ```
 
-You should see the **HEMIS government portal dashboard** — that's the
-root-level view with stat cards showing institutions, students,
-programs, and a recent institutions table.
+First visit auto-redirects to `/install`. You'll see the HEMIS install
+wizard welcome screen.
 
-If the browser says "site can't be reached":
-- Restart Laragon once more (Step 10)
-- Check Windows hosts file: `C:\Windows\System32\drivers\etc\hosts`
-  should have a line added by Laragon:
-  `127.0.0.1 opencollege.test` — if it's missing, add it manually
-  (you'll need admin privileges).
-
----
-
-## Step 12 — Log in
-
-Click **Sign In** (top right), or go directly to
-http://opencollege.test/login.
-
-The seeder created a platform admin account:
-
-- **Email:** `admin@opencollege.test`
-- **Password:** `password`
-
-> ⚠️ Change this immediately if you ever deploy beyond localhost. This
-> is for local development only.
-
-After logging in, you're back on the HEMIS dashboard with the admin
-sidebar visible.
+> **No need to run `php artisan serve`** — Laragon's Apache already
+> serves `opencollege.test` because your code is under
+> `C:/laragon/www/`.
+>
+> **If you do want to use `artisan serve`:** note that port 8000 is
+> blocked on many Windows machines (Hyper-V reserves it). If you see
+> `An attempt was made to access a socket in a way forbidden by its
+> access permissions`, use `php artisan serve --port=8080` instead.
+>
+> **"Site can't be reached":** start Laragon (Step 1); check
+> `C:\Windows\System32\drivers\etc\hosts` has
+> `127.0.0.1 opencollege.test` (Laragon adds this automatically).
 
 ---
 
-## Step 13 — Try the demo college
+## Step 7 — Welcome + Requirements
 
-The seeder also created a demo college called "College of Sierra Leone"
-with subdomain slug `csl`. To visit it you need to add it to your hosts
-file:
+**Welcome** → Click **Begin →**
 
-1. Open Notepad **as Administrator** (right-click → Run as administrator)
-2. File → Open → paste `C:\Windows\System32\drivers\etc\hosts`
-   (change the file filter to "All files" to see it)
-3. Add this line at the bottom:
-   ```
-   127.0.0.1 csl.opencollege.test
-   ```
-4. Save
-5. Open http://csl.opencollege.test in your browser
-
-You should see the college's own portal. Log in with:
-- **Email:** `admin@csl.opencollege.test`
-- **Password:** `password`
+**Requirements** → every row should show green `✓ OK`. If any are red,
+install the missing extension (Laragon Full bundles all of them — this
+should just work).
 
 ---
 
-## Step 14 — (Optional) Wildcard local subdomains
+## Step 8 — Enter database credentials
 
-Adding every college to the hosts file is tedious if you're creating
-lots of tenants locally. Laragon can auto-resolve any `*.opencollege.test`
-via Acrylic DNS:
+Enter exactly:
 
-1. Laragon menu → **Preferences → Services & ports**
-2. Check **Acrylic DNS Proxy**
-3. Click **Apply**
-4. Edit `C:\Program Files (x86)\Acrylic DNS Proxy\AcrylicHosts.txt`
-   (again, Notepad as Administrator):
-   ```
-   127.0.0.1 *.opencollege.test
-   ```
-5. Restart Acrylic DNS from Laragon's preferences
+- **Host:** `127.0.0.1`
+- **Port:** `3306`
+- **Database:** `opencollege` *(what you created in Step 5)*
+- **Username:** `root`
+- **Password:** *leave empty* (Laragon's default)
 
-Now any subdomain — `njala.opencollege.test`, `fbc.opencollege.test`,
-whatever — resolves automatically.
+Click **Test & Continue →**. The wizard tests the connection live and
+refuses to advance if it fails.
 
 ---
 
-## Step 15 — Create a real college (optional)
+## Step 9 — Enter site info
 
-To create a real college tenant instead of using the demo one:
+- **Application name:** e.g. "OpenCollege Local" or your school name
+- **Application URL:** `http://opencollege.test`
+- **Timezone:** your local (e.g. `UTC`, `Europe/London`, `Asia/Kolkata`, `Africa/Lagos`)
+- **Mail from:** anything like `admin@opencollege.test` (locally the
+  `log` driver is used — emails go to `storage/logs/laravel.log`)
 
-1. On http://opencollege.test, log in as platform admin
-2. Go to **Platform → Manage Colleges** in the sidebar
-3. Click **Register new college**
-4. Fill in:
-   - Name: University of Makeni
-   - Code: UNIMAK
-   - Domain: `unimak` (this becomes the subdomain)
-   - Type: University
-   - Admin email: `admin@unimak.opencollege.test`
-5. Submit. The page shows a **one-time temporary password** for the
-   college's admin — copy it.
-6. Visit http://unimak.opencollege.test and log in with those
-   credentials.
+---
+
+## Step 10 — Create your super-admin account
+
+- **Full name:** your name
+- **Email:** any valid email
+- **Password:** at least 8 chars, letters + numbers
+- **Confirm password:** same
+- ☑ **Seed with demo data** — tick this on first install to get a
+  sample college to explore
+
+**There are no default passwords.** Whatever you type here becomes
+your login.
+
+---
+
+## Step 11 — Finalize
+
+Click the big blue button. You'll see a spinner while the wizard:
+
+- Writes `.env` with your DB + site settings
+- Generates `APP_KEY`
+- Runs all migrations
+- Seeds demo data (if ticked)
+- Creates your super-admin user
+- Writes `storage/installed` lock file
+
+~30–60 seconds. When done, you're redirected to the Done screen with a
+"Go to login" button → go to `http://opencollege.test/login` and sign
+in with the email + password you chose in Step 10.
 
 ---
 
 ## You're done
 
-What you have now:
-
-- `http://opencollege.test` — HEMIS government dashboard
-- `http://opencollege.test/login` — platform admin login
-- `http://opencollege.test/superadmin/colleges` — manage tenant colleges
-- `http://csl.opencollege.test` — demo college "College of Sierra Leone"
-- `http://<slug>.opencollege.test` — any college you create
+| URL | What |
+|-----|------|
+| `http://opencollege.test` | HEMIS government dashboard |
+| `http://opencollege.test/login` | Platform admin login |
+| `http://opencollege.test/superadmin/colleges` | Manage tenant colleges |
+| `http://csl.opencollege.test` | Demo college (if you ticked seed) |
 
 ---
 
-## Stopping and restarting later
+## Visiting the demo college
 
-**To stop:**
-- Laragon window → Stop All
-- Close the Laragon window (the vhost stays configured)
+If you seeded demo data in Step 10, the demo college is at
+`csl.opencollege.test`. To access it on Windows:
 
-**To restart tomorrow:**
-- Open Laragon → Start All
-- Open `http://opencollege.test` — everything comes back exactly as you
-  left it
+**Option A — add one hosts entry:**
+1. Notepad as Administrator
+2. Open `C:\Windows\System32\drivers\etc\hosts` (filter: All files)
+3. Add: `127.0.0.1 csl.opencollege.test`
+4. Save
 
-**To pull newer code:**
+**Option B — Laragon wildcard (better for multiple colleges):**
+1. Laragon → **Preferences → Services & ports** → tick
+   **Acrylic DNS Proxy** → Apply
+2. Open `C:\Program Files (x86)\Acrylic DNS Proxy\AcrylicHosts.txt`
+   as Admin
+3. Add: `127.0.0.1 *.opencollege.test`
+4. Restart Acrylic via Laragon preferences
+
+Then any subdomain you create (via **Platform → Manage Colleges** on
+the HEMIS sidebar) resolves automatically.
+
+---
+
+## Stopping / restarting later
+
+**Stop:** Laragon → Stop All. Vhost config persists.
+
+**Start again tomorrow:** Laragon → Start All → open
+`http://opencollege.test`. Everything comes back exactly as you left it.
+
+**Pull newer code:**
 ```
 cd C:/laragon/www/opencollege
 git pull
-composer install --no-dev --optimize-autoloader
+composer install
 php artisan migrate --force
 php artisan config:clear
 ```
 
+The wizard will NOT re-run — it's locked by `storage/installed`. If
+you *want* to re-run it (e.g. to reconfigure DB), delete both `.env`
+and `storage/installed` first.
+
 ---
 
-## If something breaks
+## Troubleshooting
 
-| Error | Likely cause | Fix |
-|-------|-------------|-----|
-| "Site can't be reached" | Laragon not running, or vhost not picked up | Restart Laragon |
-| "No application encryption key specified" | Missed Step 5 | Run `php artisan key:generate` |
-| "Access denied for user 'root'" | Wrong `.env` password | Step 7 — leave `DB_PASSWORD=` empty |
-| "Base table or view not found" | Skipped database creation or migrations | Steps 6 + 8 |
-| 500 error after logging in | Corrupted session / stale cache | `php artisan cache:clear && php artisan config:clear && php artisan view:clear` |
-| "Class X not found" after `git pull` | New deps not installed | `composer install` |
-| Login page has CSRF 419 error | Old session cookie | Clear cookies for `opencollege.test` in browser, or use incognito |
-| Composer hangs / times out | Slow internet | Run with `--prefer-source` flag, or retry later |
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `opencollege.test` won't resolve | Laragon not running / hosts entry missing | Start Laragon; check `C:\Windows\System32\drivers\etc\hosts` |
+| "Please provide a valid cache path" (500 on first visit) | `storage/framework/cache/data` or `views` missing on a fresh clone | The repo now ships `.gitkeep` files — if you still see this, `mkdir -p storage/framework/cache/data storage/framework/views storage/logs` |
+| `artisan serve` fails: "socket forbidden by access permissions" | Windows Hyper-V reserves port 8000 | `php artisan serve --port=8080` — or just use Laragon's Apache vhost |
+| "Could not connect" in wizard Step 8 | Wrong creds or MySQL stopped | Laragon → Start All; verify `root` / empty password in HeidiSQL |
+| Wizard loops back to `/install` after CLI migrate | Lock file not created | Either re-run through wizard (delete `.env` first), or `touch storage/installed` |
+| 419 Page Expired on login | Stale CSRF cookie from before install | Clear cookies for `opencollege.test`, or use incognito |
+| "Class X not found" after `git pull` | New composer deps | `composer install` |
+| Duplicate column errors in wizard step 11 | DB already had tables from a previous install | In HeidiSQL: right-click `opencollege` database → Drop → recreate empty → re-run wizard |
 
-For any other issue, `storage/logs/laravel.log` has the full error.
+For any other issue, check `storage/logs/laravel.log` for the full
+stack trace.
 
 ---
 
 ## Next steps
 
-- Read [`docs/database.md`](database.md) to understand the schema
-- Read [`INSTALLATION.md`](../INSTALLATION.md) appendices B–C for
-  wildcard DNS and SSL in production
-- Read the security docs in [`docs/security/`](security/) before
+- [`docs/database.md`](database.md) — full schema and seeder contents
+- [`INSTALLATION.md`](../INSTALLATION.md) — wildcard DNS + SSL for
+  production
+- [`docs/security/`](security/) — security architecture before
   deploying beyond localhost
