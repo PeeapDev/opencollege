@@ -8,7 +8,7 @@
 
 @section('content')
 @php
-    $photoUrl = $student->student_photo ? asset($student->student_photo) : null;
+    $photoUrl = $student->photo ? asset($student->photo) : null;
     $fullName = $student->user->name ?? '—';
     $initials = strtoupper(substr($fullName, 0, 1));
     $currentEnrollments = $student->enrollments->filter(fn ($e) => $e->status === 'enrolled');
