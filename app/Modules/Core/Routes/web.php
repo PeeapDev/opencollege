@@ -22,6 +22,9 @@ Route::get('/contact', [FrontendController::class, 'contact'])->name('frontend.c
 // Public online admission
 Route::get('/apply', [AdmissionController::class, 'publicForm'])->name('admission.apply');
 Route::post('/apply', [AdmissionController::class, 'publicSubmit'])->middleware('throttle:10,1')->name('admission.submit');
+Route::post('/apply/check-nsi', [\App\Modules\Student\Controllers\NsiApplicationLookup::class, 'check'])
+    ->middleware('throttle:15,1')
+    ->name('admission.check-nsi');
 
 // Auth
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
