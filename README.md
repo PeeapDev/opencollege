@@ -182,6 +182,11 @@ php artisan migrate --seed
 php artisan serve
 ```
 
+> **Database details** — see [`docs/database.md`](docs/database.md) for
+> the full schema, what `migrate --seed` creates (demo users,
+> institutions, programs, students), multi-tenancy scoping, backup
+> strategy, and troubleshooting.
+
 ### Using the Composer Script
 
 ```bash
@@ -209,6 +214,18 @@ After seeding, the following accounts are available:
 ---
 
 ## Configuration
+
+### Related documentation
+
+| Topic | File |
+|-------|------|
+| Database schema, seeder, multi-tenancy, backups | [`docs/database.md`](docs/database.md) |
+| Deployment & CI/CD | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
+| Full installation guide (Laragon, XAMPP, Docker, wildcard DNS) | [`INSTALLATION.md`](INSTALLATION.md) |
+| Security architecture (audit logs, 2FA, session timeout, breach runbook) | [`docs/security/`](docs/security/) |
+| Privacy policy | [`PRIVACY.md`](PRIVACY.md) |
+| Contributing | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
+| Authors / maintainers | [`AUTHORS.md`](AUTHORS.md) |
 
 ### Environment Variables
 
