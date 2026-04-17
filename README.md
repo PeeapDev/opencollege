@@ -184,12 +184,14 @@ php artisan serve
 ```
 
 > **⚠️ Before `php artisan migrate`: create the database.**
-> Laravel will create the *tables*, but not the database itself. The
-> easiest path on Windows is Laragon → HeidiSQL → right-click → Create
-> new database → name it `opencollege` with collation `utf8mb4_unicode_ci`.
-> Full step-by-step for every OS (Laragon, XAMPP, standalone MySQL,
-> PostgreSQL) + troubleshooting is in
-> [`docs/database.md`](docs/database.md).
+> Laravel will create the *tables*, but not the database itself.
+>
+> **New to this?** Follow the step-by-step walkthrough:
+> - **Windows + Laragon (recommended):**
+>   [`docs/install-laragon.md`](docs/install-laragon.md) — 15 numbered
+>   steps, ~20 minutes, no prior PHP knowledge needed
+> - **Any OS / any stack:** [`docs/database.md`](docs/database.md)
+>   covers Laragon, XAMPP, standalone MySQL, PostgreSQL + troubleshooting
 >
 > **Common beginner mistake:** pasting SQL (`CREATE DATABASE …`) into
 > PowerShell. Those are SQL statements, not shell commands — they go
@@ -228,9 +230,10 @@ After seeding, the following accounts are available:
 
 | Topic | File |
 |-------|------|
+| **Windows step-by-step install with Laragon** | [`docs/install-laragon.md`](docs/install-laragon.md) |
 | Database schema, seeder, multi-tenancy, backups | [`docs/database.md`](docs/database.md) |
 | Deployment & CI/CD | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
-| Full installation guide (Laragon, XAMPP, Docker, wildcard DNS) | [`INSTALLATION.md`](INSTALLATION.md) |
+| Full installation guide (XAMPP, Docker, wildcard DNS, SSL) | [`INSTALLATION.md`](INSTALLATION.md) |
 | Security architecture (audit logs, 2FA, session timeout, breach runbook) | [`docs/security/`](docs/security/) |
 | Privacy policy | [`PRIVACY.md`](PRIVACY.md) |
 | Contributing | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
