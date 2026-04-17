@@ -26,20 +26,35 @@
 
 <div class="max-w-3xl mx-auto px-4 py-8" x-data="applyFlow()" x-cloak>
 
-    <div class="text-center mb-8">
-        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-id-card text-blue-600 text-2xl"></i>
-        </div>
-        <h1 class="text-3xl font-bold text-slate-900">Apply with your NSI</h1>
-        <p class="text-slate-500 mt-2">{{ $settings->academic_year ?? date('Y').'/'.(date('Y')+1) }} Academic Year at {{ $institution->name }}</p>
-        <p class="text-sm text-slate-400 mt-1">
-            Your National Student Identifier is all you need — no paperwork, no form filling.
-        </p>
+    <div class="text-center mb-6">
+        <h1 class="text-3xl font-bold text-slate-900">Apply to {{ $institution->name }}</h1>
+        <p class="text-slate-500 mt-2">{{ $settings->academic_year ?? date('Y').'/'.(date('Y')+1) }} Academic Year</p>
     </div>
 
-    {{-- ══════ STEP 1 — NSI input ══════ --}}
-    <div x-show="step==='lookup'" class="bg-white rounded-2xl border shadow-sm p-8">
-        <h2 class="text-lg font-semibold text-slate-900 mb-1">Enter your NSI</h2>
+    {{-- Tab selector (hidden once NSI flow advances past step 1) --}}
+    <div x-show="step==='lookup' || mode==='manual'" class="flex border-b border-slate-200 mb-6 bg-white rounded-t-2xl overflow-hidden">
+        <button type="button" @click="setMode('nsi')"
+                :class="mode==='nsi' ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' : 'text-slate-600 hover:text-slate-900 border-b-2 border-transparent'"
+                class="flex-1 px-4 py-4 text-sm font-semibold transition">
+            <i class="fas fa-id-card mr-1"></i> Apply with NSI
+            <span class="ml-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 align-middle">Fastest</span>
+        </button>
+        <button type="button" @click="setMode('manual')"
+                :class="mode==='manual' ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' : 'text-slate-600 hover:text-slate-900 border-b-2 border-transparent'"
+                class="flex-1 px-4 py-4 text-sm font-semibold transition">
+            <i class="fas fa-keyboard mr-1"></i> Apply Manually
+            <span class="ml-1 text-[10px] text-slate-500 align-middle">No NSI?</span>
+        </button>
+    </div>
+
+    {{-- ══════ NSI TAB — STEP 1: lookup input ══════ --}}
+    <div x-show="mode==='nsi' && step==='lookup'" class="bg-white rounded-2xl border shadow-sm p-8">
+        <div class="flex items-center gap-3 mb-1">
+            <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-id-card text-blue-600"></i>
+            </div>
+            <h2 class="text-lg font-semibold text-slate-900">Enter your NSI</h2>
+        </div>
         <p class="text-sm text-slate-500 mb-6">
             Format: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">SL-YYYY-MM-NNNNN</code>.
             You received this when you joined your secondary school.
@@ -69,7 +84,7 @@
     </div>
 
     {{-- ══════ STEP 2 — Record + confirmation ══════ --}}
-    <template x-if="step==='review' && result">
+    <template x-if="mode==='nsi' && step==='review' && result">
         <div>
             {{-- Eligibility banner --}}
             <div class="rounded-2xl overflow-hidden border mb-5"
@@ -222,7 +237,7 @@
     </template>
 
     {{-- ══════ STEP 3 — Success ══════ --}}
-    <template x-if="step==='done' && submitted">
+    <template x-if="mode==='nsi' && step==='done' && submitted">
         <div class="bg-white rounded-2xl border border-emerald-200 shadow-sm p-10 text-center">
             <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5">
                 <i class="fas fa-check text-emerald-600 text-3xl"></i>
@@ -245,11 +260,147 @@
             </a>
         </div>
     </template>
+
+    {{-- ══════ MANUAL TAB — full form ══════ --}}
+    <div x-show="mode==='manual'" class="bg-white rounded-2xl border shadow-sm p-6 sm:p-8">
+        <div class="flex items-center gap-3 mb-4 pb-4 border-b border-slate-100">
+            <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-keyboard text-amber-600"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold text-slate-900">Apply without an NSI</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Fill the full form manually. Use this if you don't have an NSI yet.</p>
+            </div>
+        </div>
+
+        @if(session('success'))
+            <div class="mb-5 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-800">
+                <i class="fas fa-check-circle mr-1"></i> {{ session('success') }}
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div class="mb-5 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-800">
+                <ul class="space-y-1">
+                    @foreach($errors->all() as $e)<li><i class="fas fa-exclamation-circle mr-1"></i>{{ $e }}</li>@endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('admission.submit') }}" class="space-y-6">
+            @csrf
+            <input type="hidden" name="institution_id" value="{{ $institution->id }}">
+
+            <div>
+                <h3 class="text-sm font-semibold text-slate-900 mb-3"><i class="fas fa-user mr-1 text-blue-600"></i> Personal Information</h3>
+                <div class="grid md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">First Name *</label>
+                        <input type="text" name="first_name" value="{{ old('first_name') }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Middle Name</label>
+                        <input type="text" name="middle_name" value="{{ old('middle_name') }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Last Name *</label>
+                        <input type="text" name="last_name" value="{{ old('last_name') }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-3 gap-3 mt-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Email *</label>
+                        <input type="email" name="email" value="{{ old('email') }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Phone</label>
+                        <input type="text" name="phone" value="{{ old('phone') }}" placeholder="+232..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Date of Birth</label>
+                        <input type="date" name="date_of_birth" value="{{ old('date_of_birth') }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-3 gap-3 mt-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Gender *</label>
+                        <select name="gender" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                            <option value="">Select…</option>
+                            <option value="male" {{ old('gender')=='male'?'selected':'' }}>Male</option>
+                            <option value="female" {{ old('gender')=='female'?'selected':'' }}>Female</option>
+                            <option value="other" {{ old('gender')=='other'?'selected':'' }}>Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Nationality</label>
+                        <input type="text" name="nationality" value="{{ old('nationality') }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">National ID / Passport</label>
+                        <input type="text" name="national_id" value="{{ old('national_id') }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-3 mt-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Address</label>
+                        <input type="text" name="address" value="{{ old('address') }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">City</label>
+                        <input type="text" name="city" value="{{ old('city') }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-semibold text-slate-900 mb-3"><i class="fas fa-graduation-cap mr-1 text-blue-600"></i> Program</h3>
+                <select name="program_id" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    <option value="">Select program…</option>
+                    @foreach($programs as $p)
+                        <option value="{{ $p->id }}" {{ old('program_id')==$p->id?'selected':'' }}>{{ $p->name }} ({{ ucfirst($p->level) }}, {{ $p->duration_years }}y)</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-semibold text-slate-900 mb-3"><i class="fas fa-user-friends mr-1 text-emerald-600"></i> Guardian (optional)</h3>
+                <div class="grid md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Guardian Name</label>
+                        <input type="text" name="guardian_name" value="{{ old('guardian_name') }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Guardian Phone</label>
+                        <input type="text" name="guardian_phone" value="{{ old('guardian_phone') }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Guardian Email</label>
+                        <input type="email" name="guardian_email" value="{{ old('guardian_email') }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Relationship</label>
+                        <select name="guardian_relation" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                            <option value="">Select…</option>
+                            <option value="father" {{ old('guardian_relation')=='father'?'selected':'' }}>Father</option>
+                            <option value="mother" {{ old('guardian_relation')=='mother'?'selected':'' }}>Mother</option>
+                            <option value="guardian" {{ old('guardian_relation')=='guardian'?'selected':'' }}>Guardian</option>
+                            <option value="other" {{ old('guardian_relation')=='other'?'selected':'' }}>Other</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full px-5 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 text-base">
+                <i class="fas fa-paper-plane mr-1"></i> Submit Application
+            </button>
+        </form>
+    </div>
 </div>
 
 <script>
 function applyFlow() {
     return {
+        mode: '{{ session('errors') && count($errors) ? 'manual' : 'nsi' }}',  // sticky to manual if server-side validation errors
         step: 'lookup',
         nsi: '',
         programId: '',
@@ -318,6 +469,12 @@ function applyFlow() {
             this.result = null;
             this.programId = '';
             this.submitError = null;
+        },
+
+        setMode(m) {
+            this.mode = m;
+            // Reset NSI flow if switching away then back
+            if (m === 'nsi' && this.step === 'done') this.back();
         },
 
         jsonHeaders() {
