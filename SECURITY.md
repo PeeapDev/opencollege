@@ -234,5 +234,40 @@ For general support, open a GitHub issue or discussion.
 
 ---
 
-**Last Updated:** March 2026
+## Security architecture & playbooks
+
+OpenCollege publishes detailed specs and runbooks for its safety
+controls. Each document lives under `docs/security/`:
+
+- [**Audit Log Viewer**](docs/security/audit-log-viewer.md) — design for
+  the admin UI that exposes the append-only audit trail written by the
+  `LogsAudit` trait.
+- [**Data Breach Notification Runbook**](docs/security/breach-notification-runbook.md)
+  — step-by-step playbook for institution operators to follow when a
+  breach is detected or suspected. Covers containment, evidence
+  preservation, regulator and data-subject notification, and
+  post-incident review.
+- [**Session Idle Timeout**](docs/security/session-timeout.md) — spec
+  for forcing logout after configurable inactivity, with role-specific
+  thresholds.
+- [**Two-Factor Authentication (2FA)**](docs/security/2fa.md) — spec
+  for TOTP, backup codes, SMS, and WebAuthn 2FA, with enforcement
+  policy for admin and finance roles.
+
+Currently implemented safety-net controls (commit `e7fcc58`):
+
+- Content-Security-Policy + HSTS + X-Frame-Options via
+  `SecurityHeaders` middleware
+- Account lockout after 10 failed login attempts (15-min cooldown)
+- Append-only audit trail on User, Institution, Grade, Invoice,
+  Payment (via `LogsAudit` trait + immutable `AuditLog` model)
+- Soft-delete on Institution (prevents accidental destruction)
+- Forced password change on first login via `ForcePasswordChange`
+  middleware
+- Rate limiting: throttle:5,1 on login, 10,1 on public admission,
+  5,10 on public college registration
+
+---
+
+**Last Updated:** April 2026
 **Maintained by:** PeeapDev
