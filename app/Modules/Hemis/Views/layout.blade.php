@@ -70,7 +70,7 @@
                 <h1 class="text-xl font-semibold text-slate-900">@yield('page_title', 'Dashboard')</h1>
                 @hasSection('subtitle')
                     <p class="text-sm text-slate-500 mt-0.5">@yield('subtitle')</p>
-                @endhasSection
+                @endif
             </div>
             <div class="flex items-center gap-3">
                 @auth

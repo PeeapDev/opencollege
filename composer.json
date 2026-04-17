@@ -33,12 +33,8 @@
     },
     "scripts": {
         "setup": [
-            "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
-            "@php artisan key:generate",
-            "@php artisan migrate --force",
-            "npm install",
-            "npm run build"
+            "@php -r \"echo 'Now create an empty database, then visit /install in your browser to run the setup wizard.' . PHP_EOL;\""
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",

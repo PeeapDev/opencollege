@@ -20,13 +20,19 @@ class TenantMiddleware
             // Tenant-specific session cookie
             config(['session.cookie' => 'oc_' . $tenantSlug . '_session']);
 
-            // Tenant-specific session storage
-            $sessionPath = storage_path('framework/sessions/tenant_' . $institution->id);
-            if (!is_dir($sessionPath)) {
-                mkdir($sessionPath, 0775, true);
-            }
-            config(['session.files' => $sessionPath]);
+            // Keep cross-subdomain cookie isolation
             config(['session.domain' => null]);
+
+            // (Removed dead code that set session.files per tenant —
+            // it only applies when SESSION_DRIVER=file, but the default
+            // driver is database which ignores the path entirely. If
+            // you need per-tenant file sessions, switch the driver in
+            // .env and uncomment the block below.)
+            // $sessionPath = storage_path('framework/sessions/tenant_' . $institution->id);
+            // if (!@is_dir($sessionPath) && !@mkdir($sessionPath, 0775, true) && !is_dir($sessionPath)) {
+            //     throw new \RuntimeException("Could not create tenant session path: {$sessionPath}");
+            // }
+            // config(['session.files' => $sessionPath]);
 
             // Bind tenant to container
             app()->instance('institution', $institution);
@@ -47,7 +53,9 @@ class TenantMiddleware
     protected function identifyTenant($request): ?Institution
     {
         $host = $request->getHttpHost();
-        $shortUrl = preg_replace('#^https?://#', '', rtrim(env('APP_URL', 'http://localhost'), '/'));
+        // Use config() not env() — env() returns null after php artisan config:cache
+        $appUrl = config('app.url', 'http://localhost');
+        $shortUrl = preg_replace('#^https?://#', '', rtrim($appUrl, '/'));
 
         // Extract subdomain
         $domain = str_replace('.' . $shortUrl, '', $host);
