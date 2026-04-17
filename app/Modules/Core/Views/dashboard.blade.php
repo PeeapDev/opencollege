@@ -1,3 +1,4 @@
+ 
 @extends('core::layouts.app')
 
 @section('title', 'Dashboard')
@@ -24,75 +25,133 @@
     </div>
 </div>
 
-{{-- KPI Cards --}}
-<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-    <div class="bg-white rounded-xl border border-gray-200 p-4 group hover:shadow-lg hover:border-blue-200 transition-all">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition">
-                <i class="fas fa-user-graduate text-blue-600"></i>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-gray-900 leading-none">{{ number_format($stats['total_students']) }}</p>
-                <p class="text-[11px] text-gray-500 mt-0.5">Students</p>
-            </div>
-        </div>
+{{-- Stat cards — SDSL-style gradients with hover lift --}}
+<style>
+    .oc-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-bottom: 24px; }
+    @media (max-width: 1024px) { .oc-stats { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 560px)  { .oc-stats { grid-template-columns: 1fr; } }
+    .oc-card {
+        position: relative; overflow: hidden;
+        border-radius: 14px; padding: 22px 24px; color: #fff;
+        transition: transform .25s ease, box-shadow .25s ease;
+        display: block;
+    }
+    .oc-card:hover { transform: translateY(-4px); box-shadow: 0 14px 32px rgba(0,0,0,0.22); }
+    .oc-card .oc-icon {
+        position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+        font-size: 64px; opacity: .14;
+        transition: opacity .25s ease, transform .25s ease;
+    }
+    .oc-card:hover .oc-icon { opacity: .28; transform: translateY(-50%) scale(1.08); }
+    .oc-card .oc-label { font-size: 12px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; opacity: .9; margin-bottom: 8px; }
+    .oc-card .oc-num   { font-size: 38px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+    .oc-card .oc-sub   { font-size: 11px; opacity: .78; }
+    .oc-card-trend {
+        position: absolute; bottom: 14px; right: 18px;
+        font-size: 11px; font-weight: 700; opacity: .85;
+        display: inline-flex; align-items: center; gap: 4px;
+    }
+    .oc-c1 { background: linear-gradient(135deg, #0891b2, #06b6d4); }
+    .oc-c2 { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
+    .oc-c3 { background: linear-gradient(135deg, #059669, #34d399); }
+    .oc-c4 { background: linear-gradient(135deg, #d97706, #fbbf24); }
+    .oc-c5 { background: linear-gradient(135deg, #0d9488, #2dd4bf); }
+    .oc-c6 { background: linear-gradient(135deg, #e11d48, #fb7185); }
+    .oc-c7 { background: linear-gradient(135deg, #2563eb, #60a5fa); }
+    .oc-c8 { background: linear-gradient(135deg, #b45309, #f59e0b); }
+    .oc-c9 { background: linear-gradient(135deg, #4f46e5, #818cf8); }
+    .oc-c10{ background: linear-gradient(135deg, #be185d, #ec4899); }
+    .oc-card a { color: inherit; }
+</style>
+
+@php
+    $currency = app('institution')->currency_symbol ?? config('opencollege.default_currency', '');
+    $paymentRate = ($stats['paid_invoices'] + $stats['pending_invoices']) > 0
+        ? round($stats['paid_invoices'] / ($stats['paid_invoices'] + $stats['pending_invoices']) * 100)
+        : 0;
+    $genderParity = $stats['total_students'] > 0
+        ? round(($stats['female_students'] / $stats['total_students']) * 100)
+        : 0;
+@endphp
+
+{{-- Row 1 — people & academic structure --}}
+<div class="oc-stats">
+    <a href="{{ route('students.index') }}" class="oc-card oc-c1">
+        <i class="fa fa-user-graduate oc-icon"></i>
+        <div class="oc-label">Students</div>
+        <div class="oc-num" data-counter="{{ $stats['total_students'] }}">{{ number_format($stats['total_students']) }}</div>
+        <div class="oc-sub">Active enrolled students</div>
+    </a>
+    <a href="{{ route('staff.index') }}" class="oc-card oc-c2">
+        <i class="fa fa-chalkboard-teacher oc-icon"></i>
+        <div class="oc-label">Staff</div>
+        <div class="oc-num" data-counter="{{ $stats['total_staff'] }}">{{ number_format($stats['total_staff']) }}</div>
+        <div class="oc-sub">Teaching &amp; admin staff</div>
+    </a>
+    <a href="{{ route('programs.index') }}" class="oc-card oc-c3">
+        <i class="fa fa-book-open oc-icon"></i>
+        <div class="oc-label">Programs</div>
+        <div class="oc-num" data-counter="{{ $stats['total_programs'] }}">{{ number_format($stats['total_programs']) }}</div>
+        <div class="oc-sub">Across {{ $stats['total_departments'] }} departments</div>
+    </a>
+    <a href="{{ route('courses.index') }}" class="oc-card oc-c4">
+        <i class="fa fa-chalkboard oc-icon"></i>
+        <div class="oc-label">Courses</div>
+        <div class="oc-num" data-counter="{{ $stats['total_courses'] }}">{{ number_format($stats['total_courses']) }}</div>
+        <div class="oc-sub">Offered this academic year</div>
+    </a>
+</div>
+
+{{-- Row 2 — finance & health --}}
+<div class="oc-stats">
+    <div class="oc-card oc-c5">
+        <i class="fa fa-sack-dollar oc-icon"></i>
+        <div class="oc-label">Total Revenue</div>
+        <div class="oc-num">{{ $currency }}{{ number_format($stats['total_revenue'], 0) }}</div>
+        <div class="oc-sub">Collected to date</div>
     </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-4 group hover:shadow-lg hover:border-purple-200 transition-all">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center group-hover:bg-purple-100 transition">
-                <i class="fas fa-chalkboard-teacher text-purple-600"></i>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-gray-900 leading-none">{{ number_format($stats['total_staff']) }}</p>
-                <p class="text-[11px] text-gray-500 mt-0.5">Staff</p>
-            </div>
-        </div>
+    <a href="{{ route('invoices.index') }}" class="oc-card oc-c6">
+        <i class="fa fa-file-invoice-dollar oc-icon"></i>
+        <div class="oc-label">Outstanding Invoices</div>
+        <div class="oc-num" data-counter="{{ $stats['pending_invoices'] }}">{{ number_format($stats['pending_invoices']) }}</div>
+        <div class="oc-sub">Unpaid, partial, or overdue</div>
+        @if($stats['pending_invoices'] > 0)
+            <span class="oc-card-trend"><i class="fa fa-circle-exclamation"></i> action needed</span>
+        @endif
+    </a>
+    <div class="oc-card oc-c7">
+        <i class="fa fa-circle-check oc-icon"></i>
+        <div class="oc-label">Payment Collection</div>
+        <div class="oc-num">{{ $paymentRate }}%</div>
+        <div class="oc-sub">{{ $stats['paid_invoices'] }} of {{ $stats['paid_invoices'] + $stats['pending_invoices'] }} invoices paid</div>
     </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-4 group hover:shadow-lg hover:border-emerald-200 transition-all">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition">
-                <i class="fas fa-book-open text-emerald-600"></i>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-gray-900 leading-none">{{ $stats['total_programs'] }}</p>
-                <p class="text-[11px] text-gray-500 mt-0.5">Programs</p>
-            </div>
-        </div>
-    </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-4 group hover:shadow-lg hover:border-amber-200 transition-all">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center group-hover:bg-amber-100 transition">
-                <i class="fas fa-chalkboard text-amber-600"></i>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-gray-900 leading-none">{{ $stats['total_courses'] }}</p>
-                <p class="text-[11px] text-gray-500 mt-0.5">Courses</p>
-            </div>
-        </div>
-    </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-4 group hover:shadow-lg hover:border-teal-200 transition-all">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center group-hover:bg-teal-100 transition">
-                <i class="fas fa-building text-teal-600"></i>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-gray-900 leading-none">{{ $stats['total_faculties'] }}</p>
-                <p class="text-[11px] text-gray-500 mt-0.5">Faculties</p>
-            </div>
-        </div>
-    </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-4 group hover:shadow-lg hover:border-rose-200 transition-all">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-rose-50 flex items-center justify-center group-hover:bg-rose-100 transition">
-                <i class="fas fa-layer-group text-rose-600"></i>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-gray-900 leading-none">{{ $stats['total_departments'] }}</p>
-                <p class="text-[11px] text-gray-500 mt-0.5">Departments</p>
-            </div>
-        </div>
+    <div class="oc-card oc-c8">
+        <i class="fa fa-venus-mars oc-icon"></i>
+        <div class="oc-label">Gender Parity</div>
+        <div class="oc-num">{{ $genderParity }}% <span style="font-size:16px; opacity:.8;">♀</span></div>
+        <div class="oc-sub">{{ $stats['female_students'] }} female &middot; {{ $stats['male_students'] }} male</div>
     </div>
 </div>
+
+<script>
+// Count-up animation for the stat numbers
+(function(){
+    var els = document.querySelectorAll('.oc-num[data-counter]');
+    els.forEach(function(el){
+        var target = parseInt(el.dataset.counter) || 0;
+        if (target < 10) return; // not worth animating
+        var duration = 900, start = performance.now();
+        function step(now){
+            var t = Math.min(1, (now - start) / duration);
+            var eased = 1 - Math.pow(1 - t, 3);
+            el.textContent = Math.floor(eased * target).toLocaleString();
+            if (t < 1) requestAnimationFrame(step);
+        }
+        el.textContent = '0';
+        requestAnimationFrame(step);
+    });
+})();
+</script>
 
 {{-- Charts Row 1: Enrollment Trend + Students by Program --}}
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -306,3 +365,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
+
