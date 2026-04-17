@@ -72,11 +72,28 @@ class AuthController extends Controller
             Auth::login($user, $remember);
             $request->session()->regenerate();
 
-            // Redirect students to student portal
+            // Clear any 'intended' URL left in the session from a previous
+            // cross-subdomain visit (e.g. user hit root → /hemis → /login
+            // then completed login on a tenant subdomain; without clearing,
+            // redirect()->intended() would send them back to /hemis).
+            $request->session()->forget('url.intended');
+
+            // Route by role + where they logged in
+            $institution = app()->bound('institution') ? app('institution') : null;
+            $onRoot = !$institution || $institution->id == 1;
+
             if ($user->hasRole('student')) {
-                return redirect()->intended(route('student.portal'));
+                return redirect()->route('student.portal');
             }
-            return redirect()->intended(route('dashboard'));
+
+            // Platform super-admin signing in on the root domain → HEMIS
+            if ($onRoot && $user->hasRole('super_admin')) {
+                return redirect('/hemis');
+            }
+
+            // Everyone else (tenant admins, staff, registrar, lecturer, etc.)
+            // lands on the per-tenant admin dashboard
+            return redirect()->route('dashboard');
         }
 
         // Failed login — track attempts on the user record
