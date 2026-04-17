@@ -25,6 +25,9 @@ Route::post('/apply', [AdmissionController::class, 'publicSubmit'])->middleware(
 Route::post('/apply/check-nsi', [\App\Modules\Student\Controllers\NsiApplicationLookup::class, 'check'])
     ->middleware('throttle:15,1')
     ->name('admission.check-nsi');
+Route::post('/apply/submit-by-nsi', [\App\Modules\Student\Controllers\NsiApplicationLookup::class, 'submit'])
+    ->middleware('throttle:10,1')
+    ->name('admission.submit-by-nsi');
 
 // Auth
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
