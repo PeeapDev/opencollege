@@ -117,10 +117,16 @@ class NsiApplicationLookup extends Controller
     private function matchesSeniorPattern(string $className): bool
     {
         $c = strtolower(trim($className));
-        // Match SSS 3, SS3, SSS-3, Senior Secondary 3, Form 6 (SL variants)
+
+        // Explicit SSS 3 / SS 3 / Form 6 — strongest match
         if (preg_match('/(^|\s)s{1,2}s\s*3\b/', $c)) return true;
-        if (str_contains($c, 'senior') && str_contains($c, '3')) return true;
         if (preg_match('/\bform\s*6\b/', $c)) return true;
+
+        // Generic "Senior Secondary" / "Senior High" — common in SL where
+        // schools don't always record the specific SSS grade. Registry
+        // marking a student as senior secondary is treated as eligible;
+        // the college still requires WASSCE certificates at enrolment.
+        if (str_contains($c, 'senior')) return true;
 
         return false;
     }
