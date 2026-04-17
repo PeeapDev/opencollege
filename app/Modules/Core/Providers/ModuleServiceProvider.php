@@ -19,6 +19,7 @@ class ModuleServiceProvider extends ServiceProvider
         'Communication',
         'Settings',
         'HumanResource',
+        'Hemis',
     ];
 
     public function boot(): void

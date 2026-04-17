@@ -14,8 +14,10 @@ class FrontendController extends Controller
     public function index()
     {
         $institution = app()->bound('institution') ? app('institution') : null;
+
+        // Root domain (college.edu.sl) = HEMIS government portal
         if (!$institution || $institution->id == 1) {
-            return redirect()->route('login');
+            return redirect()->route('hemis.dashboard');
         }
 
         $settings = DB::table('frontend_settings')->where('institution_id', $institution->id)->first();
