@@ -1,138 +1,96 @@
-# Privacy Policy
+# OpenCollege privacy information
 
 **Project:** OpenCollege — Higher-Education Management System
+
 **Maintainer:** PeeapDev (Peeap Ltd, Sierra Leone)
+
 **Website:** https://college.edu.sl
-**Last updated:** 2026-04-15
 
-OpenCollege is a software platform that partner higher-education institutions
-self-host to manage their own students, staff, courses, and records. This
-document describes the privacy principles the software follows and the
-controls operators and end-users have over personal data.
+**Privacy contact for the reference deployment:** college.edu.sl@gmail.com
+**Last reviewed:** 2026-09-23
 
-It is written to meet the privacy-and-legal-compliance expectations of the
-Digital Public Goods Alliance (DPGA) Standard and relevant data-protection
-law (Sierra Leone Data Protection Act, EU GDPR, and comparable regimes).
+This document describes the personal data OpenCollege can process, the controls
+visible in the public source code, and responsibilities that remain with each
+institution operating it. It is not a certification of compliance with every
+law in every jurisdiction. Features in the public repository may not yet be
+deployed at college.edu.sl; operators must verify their own installation.
 
----
+## Controller and scope
 
-## 1. Who is the data controller?
+An institution using OpenCollege decides why and how its student and staff
+records are processed and must identify itself and a privacy contact to its
+users. The maintainer provides software and may also operate the reference
+deployment; those roles must not be treated as interchangeable. For a request
+about a particular student's or employee's records, contact the institution
+that holds the record. If you cannot identify the operator of a record on the
+reference deployment, write to college.edu.sl@gmail.com so the request can be
+directed to the appropriate operator. Do not email sensitive records or
+identity documents.
 
-When an institution (a university, college, or polytechnic) installs and
-operates OpenCollege, **that institution is the data controller** for all
-data stored in its instance. PeeapDev, as the maintainer of the software,
-is **not** the controller of student or staff records held by operators.
+## Data and purposes
 
-For institutions hosted on the reference deployment at https://college.edu.sl,
-the data controller is the hosting institution identified on that instance's
-"About" page.
+Depending on the modules an institution enables, the software can hold names,
+contact and guardian details, date of birth, photographs, enrolment and
+employment information, grades, attendance, invoices and payments, account
+credentials, and technical logs. Institutions use this information to provide
+education and administration, authenticate users, maintain records, and process
+payments. An institution must tell its users which fields are required, which
+are optional, its lawful basis for each purpose, and how long records are kept.
 
-## 2. What personal data does OpenCollege collect?
+The application can integrate with external verification and payment services.
+An operator must identify active integrations and any associated data sharing
+or international transfers in its own notice. We do not claim that every
+deployment keeps all data solely within its own database.
 
-OpenCollege is an institutional management system and therefore processes
-personal data by design. Typical categories include:
+## Consent and user choices
 
-- **Student records:** full name, date of birth, national ID / index number,
-  photograph, contact details, guardian details, admission and enrolment
-  records, courses, grades, attendance, fee payments, disciplinary records,
-  certificates issued.
-- **Staff records:** full name, contact details, role, payroll information
-  (where the HR module is enabled).
-- **Authentication data:** email address, hashed password, session tokens,
-  two-factor secrets (where enabled).
-- **Audit / technical logs:** IP address, user-agent, timestamps for
-  authentication and sensitive actions (where audit logging is enabled).
+Core academic and employment records are not necessarily processed on consent;
+the operator must determine and document the applicable basis. An operator
+must provide any required notice or consent before collecting optional data or
+using information for a new purpose, such as marketing. We have not verified a
+universal consent-management or withdrawal workflow in the deployed software.
+Operators must record and honour such choices through their own documented
+process until an appropriate workflow is implemented and tested.
 
-OpenCollege **does not** by default transmit personal data to any external
-service. All data is stored in the operator's own database.
+## Access, correction, deletion, and export requests
 
-## 3. Lawful basis for processing
+Users may ask the institution holding their data for access, correction,
+deletion, restriction, or a copy, where applicable law provides those rights.
+The operator must verify the requester's authority, review legal retention
+requirements, and respond within the period required by applicable law.
+Deleting an account must not be assumed to erase every related academic,
+financial, backup, or audit record. The public repository contains export
+code, but availability and authorization of those endpoints must be verified
+before they are offered to users or cited as deployed functionality.
 
-Operators must establish a lawful basis for each processing activity under
-applicable law. Typical bases:
+See [the privacy-request procedure](docs/privacy-requests.md) for the steps
+operators and the maintainer should follow. Do not send passwords, full student
+records, or identity documents by ordinary email.
 
-- **Contract / legitimate interest:** academic records required to deliver
-  education.
-- **Consent:** optional fields (photographs for marketing, alumni contact).
-- **Legal obligation:** reporting to the national education ministry.
+## Security and retention
 
-OpenCollege provides the technical means for operators to record consent
-and to restrict processing; the legal framework is the operator's
-responsibility.
+The code uses Laravel authentication, password hashing, CSRF protection for
+web forms, and institution-scoped queries in many modules. These measures do
+not replace an independent security review, and they do not guarantee that
+every endpoint is correctly authorized. Each operator must set access roles,
+protect backups, configure retention periods, and review its integrations.
+No universal, verified schedule for automatic deletion or pseudonymisation of
+student and staff records is claimed here.
 
-## 4. Data subject rights
+Report security issues through [SECURITY.md](SECURITY.md). Privacy requests
+should use the privacy contact above or the operator's published contact.
 
-The software supports the following rights for data subjects (students,
-staff, guardians):
+## Children and international use
 
-- **Right of access:** data subjects can request a full copy of their data
-  via the data-export endpoints (see `docs/api-export.md` when implemented).
-  Operators must process these requests within the timelines set by local
-  law.
-- **Right to rectification:** students and staff can correct their own
-  contact details through the portal. Academic records are corrected
-  through a documented registrar workflow.
-- **Right to erasure ("right to be forgotten"):** OpenCollege supports
-  deleting personal data at the end of the retention period. Where academic
-  records must be preserved by law, the software supports pseudonymisation.
-- **Right to data portability:** all primary entities can be exported as
-  CSV or JSON (see `docs/api-export.md`).
-- **Right to object / withdraw consent:** optional data fields can be
-  cleared at any time without affecting core records.
+If an institution enrols minors, it must apply applicable guardian-notice or
+consent requirements and restrict access to children's records. Guardian
+fields alone do not constitute a verified child-safety or consent workflow.
+Institutions outside Sierra Leone, or serving people in other jurisdictions,
+must assess those jurisdictions' laws independently. We do not claim blanket
+GDPR or other international-law compliance.
 
-Operators must publish their own privacy notice identifying the controller
-contact, data-protection officer, and retention periods.
+## Changes
 
-## 5. Data retention
-
-OpenCollege does not impose a fixed retention period — operators configure
-this per data category, per local legal requirements. The software supports:
-
-- Automatic purge of inactive sessions and auth tokens.
-- Soft-delete for records, with documented hard-delete workflows.
-- Audit-log rotation.
-
-## 6. Security
-
-OpenCollege follows standard Laravel security practices:
-
-- Passwords hashed with bcrypt (Laravel default).
-- CSRF protection on all state-changing requests.
-- Role-based access control.
-- Parameterised queries (Eloquent / query builder) to prevent SQL injection.
-- HTTPS enforced in production deployments.
-
-Security vulnerabilities must be reported via the process in `SECURITY.md`.
-
-## 7. Children's data
-
-OpenCollege is designed primarily for higher-education institutions. Where
-operators use it for students under 18, they must:
-
-- Obtain parental / guardian consent where required by local law.
-- Limit collection to what is strictly necessary.
-- Apply stricter access controls to minors' data.
-
-The software provides guardian-relationship fields and access-control
-flags to support this.
-
-## 8. International transfers
-
-OpenCollege itself does not transfer data internationally. If an operator
-chooses to integrate with an external service (e.g., a cloud storage
-backend, an AI grading assistant, a payment gateway), the operator is
-responsible for ensuring the integration complies with cross-border
-transfer rules.
-
-## 9. Contact
-
-Questions about this software's privacy features: support@college.edu.sl
-Security issues: see `SECURITY.md`
-Questions about a specific operator's use of the software: contact that
-operator directly.
-
-## 10. Changes to this policy
-
-This file is versioned in Git. Material changes are announced in release
-notes. Each operator should publish their own privacy notice for end-users
-of their instance.
+This document is versioned in the public repository. Each operator should
+publish its own notice with its legal identity, contact, purposes, lawful
+bases, recipients, retention periods, and request procedure.

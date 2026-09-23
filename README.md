@@ -543,7 +543,7 @@ You are free to use, modify, and distribute this software for personal, educatio
 
 ## DPG Standard Compliance
 
-OpenCollege is designed to meet the [Digital Public Goods Standard](https://digitalpublicgoods.net/standard/) across all nine indicators:
+OpenCollege is working toward the [Digital Public Goods Standard](https://digitalpublicgoods.net/standard/). The table below describes evidence and gaps, not a certification or a claim that every public-repository feature is deployed:
 
 | # | Indicator | Status | Evidence |
 |---|-----------|--------|----------|
@@ -552,16 +552,16 @@ OpenCollege is designed to meet the [Digital Public Goods Standard](https://digi
 | 3 | **Clear Ownership** | Achieved | Developed and maintained by PeeapDev |
 | 4 | **Platform Independence** | Achieved | Standard PHP/MySQL stack, runs on any LAMP/LEMP server |
 | 5 | **Documentation** | Achieved | README, module docs, API docs, contributing guide |
-| 6 | **Mechanism for Extracting Data** | Achieved | REST API, database export, no vendor lock-in |
-| 7 | **Adherence to Privacy and Applicable Laws** | Achieved | Tenant-isolated data, no external tracking, configurable data retention |
+| 6 | **Mechanism for Extracting Data** | Needs verification | Public repository has CSV/JSON export code, but the reference deployment and authorization need review; non-PII import/export evidence remains to be documented |
+| 7 | **Adherence to Privacy and Applicable Laws** | Needs operator and legal review | [Privacy information](PRIVACY.md) and [request procedure](docs/privacy-requests.md) describe current controls and outstanding responsibilities |
 | 8 | **Adherence to Standards & Best Practices** | Achieved | PSR-12, REST API, JSON, UTF-8, semantic versioning |
-| 9 | **Does No Harm** | Achieved | Education-focused, privacy-respecting, secure by default |
+| 9 | **Does No Harm** | Needs review | Security and safety controls must be assessed in the deployed version |
 
 ### Data Privacy & Protection
 
-- All data is tenant-isolated -- colleges cannot access each other's data
-- No external analytics or tracking services
-- No data is shared with third parties without explicit configuration
+- Many data queries are institution-scoped; each endpoint still requires authorization review
+- Operators must disclose enabled analytics and external integrations
+- External verification or payment integrations may share data when configured
 - Passwords are hashed using bcrypt with configurable rounds
 - Session data is encrypted and stored server-side
 - Student data is protected under institutional data policies
